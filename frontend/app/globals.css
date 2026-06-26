@@ -1,0 +1,401 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --font-sans: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", ui-monospace, monospace;
+
+  /* Zoidberg 2.0 — brand palette */
+  --brand: #2d9b7a;
+  --brand-dark: #1b6e54;
+  --brand-light: #e8f5f0;
+  --brand-muted: #f4f8f6;
+  --alert: #f472b6;
+  --alert-light: #fce7f3;
+  --success: #4caf8c;
+
+  /* Tailwind semantic tokens */
+  --background: #fafbfa;
+  --foreground: #1a2e28;
+  --card: #ffffff;
+  --card-foreground: #1a2e28;
+  --popover: #ffffff;
+  --popover-foreground: #1a2e28;
+  --primary: #1b6e54;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f5f0;
+  --secondary-foreground: #1a2e28;
+  --muted: #f4f8f6;
+  --muted-foreground: rgba(26, 46, 40, 0.6);
+  --accent: #e8f5f0;
+  --accent-foreground: #2d9b7a;
+  --destructive: #f472b6;
+  --destructive-foreground: #ffffff;
+  --border: #dce8e3;
+  --input: transparent;
+  --input-background: #fafbfa;
+  --switch-background: #dce8e3;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #2d9b7a;
+  --radius: 1rem;
+
+  /* Shape and elevation */
+  --radius-card: 1.5rem;
+  --radius-pill: 9999px;
+  --radius-input: 1rem;
+  --shadow-soft: 0 14px 30px -18px rgba(27, 110, 84, 0.18);
+  --shadow-card: 0 10px 24px -14px rgba(27, 110, 84, 0.1);
+  --shadow-strong: 0 18px 40px -18px rgba(20, 83, 45, 0.14);
+
+  /* Layout spacing */
+  --space-section: 2rem;
+  --space-section-sm: 1.5rem;
+  --container-max: 80rem;
+  --transition-smooth: 180ms ease;
+
+  /* Chart tokens */
+  --chart-1: #2d9b7a;
+  --chart-2: #1b6e54;
+  --chart-3: #e8f5f0;
+  --chart-4: #f472b6;
+  --chart-5: #4caf8c;
+
+  /* Sidebar tokens */
+  --sidebar: #1b6e54;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #2d9b7a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #2d9b7a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-light: var(--brand-light);
+  --color-brand-muted: var(--brand-muted);
+  --color-alert: var(--alert);
+  --color-success: var(--success);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ── Base styles ────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+h4 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+input,
+textarea,
+select {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+/* ── Utilities ────────────────────────────────────────── */
+.app-shell {
+  width: min(100%, var(--container-max));
+  margin-inline: auto;
+}
+
+.surface-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.surface-subtle {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.surface-accent {
+  background: var(--brand-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.surface-muted {
+  background: var(--muted);
+  border: 1px solid rgba(220, 232, 227, 0.4);
+  border-radius: 0.75rem;
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.rounded-card {
+  border-radius: var(--radius-card);
+}
+
+.rounded-pill {
+  border-radius: var(--radius-pill);
+}
+
+.rounded-input {
+  border-radius: var(--radius-input);
+}
+
+.dropzone {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-card);
+  background: var(--brand-light);
+}
+
+.dropzone-active {
+  border-color: var(--brand);
+  background: rgba(45, 155, 122, 0.08);
+}
+
+/* ── Button utilities ──────────────────────────────────── */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  user-select: none;
+  transition-property: all;
+  transition-duration: 150ms;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-soft);
+}
+.btn-primary:hover {
+  background-color: var(--brand-dark);
+}
+.btn-primary:active {
+  background-color: var(--brand-dark);
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background-color: var(--brand);
+  color: white;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-soft);
+}
+.btn-secondary:hover {
+  background-color: var(--brand-dark);
+}
+.btn-secondary:active {
+  background-color: var(--brand-dark);
+  transform: translateY(1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--brand-light);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: rgba(26, 46, 40, 0.7);
+  border: 1px solid transparent;
+}
+.btn-ghost:hover {
+  background: var(--brand-light);
+  color: var(--foreground);
+}
+
+/* ── Form utilities ────────────────────────────────────── */
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.04px;
+  color: var(--foreground);
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--input-background);
+  border-radius: var(--radius-input);
+  color: var(--foreground);
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth),
+    background-color var(--transition-smooth);
+}
+.field-input::placeholder {
+  color: rgba(26, 46, 40, 0.3);
+}
+.field-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(45, 155, 122, 0.12);
+}
+
+.field-error {
+  color: var(--destructive);
+}
+
+.progress-track {
+  height: 0.5rem;
+  width: 100%;
+  background: var(--brand-light);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width var(--transition-smooth);
+  background: var(--brand);
+}
+
+.progress-fill-alert {
+  background: var(--alert);
+}
+
+.progress-fill-success {
+  background: var(--success);
+}
