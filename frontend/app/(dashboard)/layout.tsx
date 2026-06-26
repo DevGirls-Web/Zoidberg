@@ -6,7 +6,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
+  return ( 
     <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar doctorName="Dr. Julien" specialty="Pneumologue" initials="DJ" />
 
@@ -17,4 +17,4 @@ export default function DashboardLayout({
       </main>
     </div>
   );
-}
+} 

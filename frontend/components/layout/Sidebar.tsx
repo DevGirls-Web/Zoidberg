@@ -36,7 +36,7 @@ type NavSection = {
 // Les hrefs reflètent les vraies routes sous app/(dashboard)/.
 // disabled: true => route pas encore implémentée, lien visuel grisé non cliquable.
 const sections: NavSection[] = [
-  {
+  { 
     title: "",
     items: [
       { label: "Tableau de bord", href: "/accueil", icon: "dashboard" },
@@ -298,16 +298,15 @@ export function Sidebar({
       )}
 
       {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-70 flex-col bg-sidebar lg:flex shrink-0">
+      <aside className="fixed top-6 left-6 z-50 hidden w-60 flex-col bg-sidebar rounded-[24px] shadow-2xl border border-white/10 lg:flex shrink-0" style={{ height: 'calc(100vh - 48px)' }}>
         <SidebarContent {...contentProps} />
       </aside>
 
       {/* Sidebar drawer mobile */}
-      <aside
-        className={clsx(
-          "fixed inset-y-0 left-0 z-50 w-70 flex-col bg-sidebar transition-transform duration-300 ease-in-out lg:hidden",
+      <aside className={clsx(
+          "fixed inset-y-0 left-6 z-50 w-60 flex-col bg-sidebar rounded-[24px] shadow-2xl border border-white/10 transition-transform duration-300 ease-in-out lg:hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
+        )} style={{ height: 'calc(100vh - 48px)' }}
       >
         <button
           onClick={() => onClose?.()}

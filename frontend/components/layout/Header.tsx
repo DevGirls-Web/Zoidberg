@@ -12,19 +12,33 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-10 flex items-end justify-between px-12 py-6 border-b border-border/80"
-      style={{ backdropFilter: "blur(6px)", background: "rgba(255,255,255,0.72)" }}
-    >
-      <div className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-muted-foreground">{dateCapitalized}</span>
-        <h1 className="text-[30px] font-bold text-foreground tracking-tight leading-tight">Bonjour Julien</h1>
+        className="sticky top-6 z-10 flex items-center justify-between px-8 py-3 border-b border-border/40 mx-6 rounded-[16px]"
+        style={{ 
+          backdropFilter: "blur(6px)", 
+          background: "rgba(255,255,255,0.35)" 
+        }}
+      >
+      {/* Gauche : Bonjour + sous-titre */}
+      <div className="flex flex-col gap-0.5">
+        <h1 className="text-[22px] font-bold text-foreground tracking-tight leading-tight">
+          Bonjour Julien
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Modele de consultation : Pneumologue
+        </p>
       </div>
 
-      <div className="relative">
-        <button className="size-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-          <Bell size={16} />
-        </button>
-        <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-alert border-2 border-white" />
+      {/* Droite : Date + Notification */}
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+          {dateCapitalized}
+        </span>
+        <div className="relative">
+          <button className="size-9 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+            <Bell size={15} />
+          </button>
+          <span className="absolute top-2 right-2 size-2 rounded-full bg-alert border-2 border-white" />
+        </div>
       </div>
     </header>
   );
