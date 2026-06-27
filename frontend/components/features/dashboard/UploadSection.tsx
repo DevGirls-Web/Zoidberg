@@ -28,7 +28,7 @@ export function UploadSection({
         onFileRemoved={onFileRemoved}
         uploadedFile={uploadedFile}
       />
-      {analysisState === "uploaded" && (
+      {analysisState === "uploaded" && uploadedFile && (
         <div className="flex justify-end">
           <Button variant="secondary" size="md" icon={<RefreshCw size={16} />} onClick={onAnalyze}>
             Lancer l&apos;analyse

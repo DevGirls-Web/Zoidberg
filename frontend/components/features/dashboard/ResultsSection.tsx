@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { RefreshCw, Download, ZoomIn, ZoomOut, Check } from "lucide-react";
 import { Card, CardHeader } from "@components/ui/Card";
 import { Button } from "@components/ui/Button";
@@ -5,17 +6,36 @@ import { Badge } from "@components/ui/Badge";
 import { ProgressBar } from "@components/ui/ProgressBar";
 import { XRayPlaceholder } from "./XRayPlaceholder";
 
-const ANALYSIS_DETAILS = [
-  "Opacités alvéolaires lobe inférieur droit",
-  "Absence d'épanchement pleural",
-  "Silhouette cardiaque normale",
-];
-
 interface ResultsSectionProps {
   onReset: () => void;
+  diagnosis?: string;
+  confidence?: number;
+  details?: string[];
+  imageUrl?: string;      // Ajouté
+  onDownload?: () => void;
 }
 
-export function ResultsSection({ onReset }: ResultsSectionProps) {
+export function ResultsSection({ 
+  onReset, 
+  diagnosis = "Pneumonie détectée",
+  confidence = 94,
+  details = [],
+  imageUrl,               // Ajouté
+  onDownload
+}: ResultsSectionProps) {
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 2;
+  const ZOOM_STEP = 0.1;
+
+  function handleZoomIn() {
+    setZoomLevel(prev => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
+  }
+
+  function handleZoomOut() {
+    setZoomLevel(prev => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
+  }
+
   return (
     <Card variant="default" padding="md" className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
@@ -26,25 +46,35 @@ export function ResultsSection({ onReset }: ResultsSectionProps) {
       <div className="flex gap-8">
         {/* X-ray image */}
         <div className="relative rounded-[16px] overflow-hidden shrink-0 w-[220px] border border-border bg-black">
-          <div className="aspect-[220/260] relative">
+          <div 
+            className="aspect-[220/260] relative transition-transform duration-200"
+            style={{ transform: `scale(${zoomLevel})` }}
+          >
             <div className="absolute inset-0">
-              <XRayPlaceholder showOverlay />
+              <XRayPlaceholder 
+                imageUrl={imageUrl}  // Passé au composant
+                showOverlay={diagnosis === "Pneumonie détectée"}
+              />
             </div>
-            <div
-              className="absolute inset-0 mix-blend-multiply rounded-[16px]"
-              style={{ background: "linear-gradient(44deg, rgba(244,114,182,0) 0%, rgba(244,114,182,0.15) 60%, rgba(244,114,182,0) 100%)" }}
-            />
           </div>
           {/* Controls */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
-            {[<ZoomIn key="zi" size={15} />, <ZoomOut key="zo" size={15} />].map((icon, i) => (
-              <button
-                key={i}
-                className="size-8 rounded-lg backdrop-blur-sm bg-white/90 shadow flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                {icon}
-              </button>
-            ))}
+            <button
+              onClick={handleZoomIn}
+              className="size-8 rounded-lg backdrop-blur-sm bg-white/90 shadow flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={zoomLevel >= MAX_ZOOM}
+              aria-label="Zoom avant"
+            >
+              <ZoomIn size={15} />
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="size-8 rounded-lg backdrop-blur-sm bg-white/90 shadow flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={zoomLevel <= MIN_ZOOM}
+              aria-label="Zoom arrière"
+            >
+              <ZoomOut size={15} />
+            </button>
           </div>
         </div>
 
@@ -55,16 +85,16 @@ export function ResultsSection({ onReset }: ResultsSectionProps) {
             <span className="text-sm font-medium text-muted-foreground uppercase tracking-[0.7px]">
               Diagnostic principal
             </span>
-            <Badge variant="pneumonia" dot>Pneumonie détectée</Badge>
+            <Badge variant="pneumonia" dot>{diagnosis}</Badge>
           </div>
 
           {/* Confidence bar */}
-          <ProgressBar value={94} label="Indice de confiance" color="alert" />
+          <ProgressBar value={confidence} label="Indice de confiance" color="alert" />
 
           {/* Detail list */}
           <div className="bg-background border border-border rounded-[12px] p-4 flex flex-col gap-3">
             <h4 className="text-sm font-medium text-foreground">Détails de l&apos;analyse</h4>
-            {ANALYSIS_DETAILS.map((item) => (
+            {details.map((item) => (
               <div key={item} className="flex items-start gap-2">
                 <Check size={12} className="text-brand mt-1 shrink-0" />
                 <span className="text-sm text-muted-foreground leading-snug">{item}</span>
@@ -73,7 +103,13 @@ export function ResultsSection({ onReset }: ResultsSectionProps) {
           </div>
 
           {/* Download */}
-          <Button variant="outline" size="sm" icon={<Download size={16} />} fullWidth>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            icon={<Download size={16} />} 
+            fullWidth
+            onClick={onDownload}
+          >
             Télécharger le rapport détaillé
           </Button>
         </div>

@@ -4,6 +4,8 @@ import { useRef, useState, DragEvent, ChangeEvent } from "react";
 import { Upload, X, FileImage } from "lucide-react";
 import { clsx } from "clsx";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
+
 export interface UploadedFile {
   name: string;
   size: string;
@@ -30,8 +32,17 @@ export function UploadZone({
 }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleFile(file: File) {
+    // Validation taille
+    if (file.size > MAX_FILE_SIZE) {
+      setError(`Le fichier dépasse la taille maximale de 10 Mo (${formatBytes(file.size)})`);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    
+    setError(null);
     onFileSelected({ name: file.name, size: formatBytes(file.size), raw: file });
   }
 
@@ -87,6 +98,14 @@ export function UploadZone({
           Formats acceptés : JPEG, PNG, DICOM — Max 10 Mo
         </p>
 
+        {/* Message d'erreur */}
+        {error && (
+          <div className="mt-2 text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-4 py-2 flex items-center gap-2">
+            <span className="shrink-0">⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
         {/* File preview chip */}
         {uploadedFile && (
           <div className="mt-4 flex items-center gap-3 bg-card border border-border rounded-full px-4 py-2 shadow-sm">
@@ -96,7 +115,10 @@ export function UploadZone({
             </span>
             <span className="text-xs text-muted-foreground">{uploadedFile.size}</span>
             <button
-              onClick={onFileRemoved}
+              onClick={() => {
+                setError(null);
+                onFileRemoved();
+              }}
               className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer ml-1"
             >
               <X size={14} />

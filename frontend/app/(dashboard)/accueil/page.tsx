@@ -10,34 +10,48 @@ import { RecommendationsSection } from "@components/features/dashboard/Recommend
 import { PatientDossierSection } from "@components/features/dashboard/PatientDossierSection";
 import { UploadedFile } from "@components/features/dashboard/UploadZone";
 import type { AnalysisState } from "@components/features/dashboard/types";
+import { api, type PredictionResult } from "@lib/api";
 
 export default function AccueilPage() {
-  const [analysisState, setAnalysisState] = useState<AnalysisState>("done");
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>({
-    name: "patient_rx_thorax_2406.png",
-    size: "4.2 Mo",
-    raw: {} as File,
-  });
+  const [analysisState, setAnalysisState] = useState<AnalysisState>("idle");
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const [results, setResults] = useState<PredictionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileSelected = useCallback((file: UploadedFile) => {
     setUploadedFile(file);
     setAnalysisState("uploaded");
+    setError(null);
   }, []);
 
   const handleFileRemoved = useCallback(() => {
     setUploadedFile(null);
     setAnalysisState("idle");
+    setResults(null);
+    setError(null);
   }, []);
 
-  const handleAnalyze = useCallback(() => {
+  const handleAnalyze = useCallback(async () => {
+    if (!uploadedFile) return;
+
     setAnalysisState("analyzing");
-    // TODO: remplacer par le vrai appel à l'API d'analyse
-    setTimeout(() => setAnalysisState("done"), 2200);
-  }, []);
+    setError(null);
+
+    try {
+      const result = await api.predict(uploadedFile.raw);
+      setResults(result);
+      setAnalysisState("done");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'analyse");
+      setAnalysisState("uploaded");
+    }
+  }, [uploadedFile]);
 
   const handleReset = useCallback(() => {
+    setResults(null);
     setUploadedFile(null);
     setAnalysisState("idle");
+    setError(null);
   }, []);
 
   return (
@@ -53,19 +67,43 @@ export default function AccueilPage() {
             onAnalyze={handleAnalyze}
           />
 
+          {error && (
+            <Card variant="default" padding="md" className="border-red-200 bg-red-50">
+              <p className="text-sm text-red-600">⚠️ {error}</p>
+            </Card>
+          )}
+
           {analysisState === "analyzing" && (
             <Card variant="default" padding="md" className="flex items-center justify-center py-16">
               <Loader size="lg" label="Analyse IA en cours…" />
             </Card>
           )}
 
-          {analysisState === "done" && <ResultsSection onReset={handleReset} />}
+          {analysisState === "done" && results && (
+            <ResultsSection
+              onReset={handleReset}
+              diagnosis={results.prediction === "PNEUMONIA" ? "Pneumonie détectée" : "Normal"}
+              confidence={Math.round(results.confidence * 100)}
+              details={[
+                `Prédiction: ${results.prediction}`,
+                `Confiance: ${Math.round(results.confidence * 100)}%`,
+                `Seuil utilisé: ${results.threshold_used}`,
+              ]}
+              imageUrl={results.gradcam_image}
+              onDownload={() => {
+                const link = document.createElement("a");
+                link.href = results.gradcam_image;
+                link.download = "gradcam-result.jpg";
+                link.click();
+              }}
+            />
+          )}
         </div>
 
         {/* ── Right column ── */}
         <div className="flex flex-col gap-8">
-          {analysisState === "done" ? (
-            <RecommendationsSection score={94} />
+          {analysisState === "done" && results ? (
+            <RecommendationsSection score={Math.round(results.confidence * 100)} />
           ) : (
             <Card variant="tinted" padding="md" className="flex flex-col gap-4">
               <CardHeader title="Recommandations cliniques" titleIcon={<RefreshCw size={20} />} />
