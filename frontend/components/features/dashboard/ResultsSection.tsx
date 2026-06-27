@@ -5,6 +5,7 @@ import { Button } from "@components/ui/Button";
 import { Badge } from "@components/ui/Badge";
 import { ProgressBar } from "@components/ui/ProgressBar";
 import { XRayPlaceholder } from "./XRayPlaceholder";
+import { FeedbackSection } from "./FeedbackSection";
 
 interface ResultsSectionProps {
   onReset: () => void;
@@ -13,6 +14,7 @@ interface ResultsSectionProps {
   details?: string[];
   imageUrl?: string;      // Ajouté
   onDownload?: () => void;
+   prediction?: "NORMAL" | "PNEUMONIA"; // Ajouté pour le feedback
 }
 
 export function ResultsSection({ 
@@ -21,7 +23,8 @@ export function ResultsSection({
   confidence = 94,
   details = [],
   imageUrl,               // Ajouté
-  onDownload
+  onDownload,
+  prediction = "PNEUMONIA" // Valeur par défaut
 }: ResultsSectionProps) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const MIN_ZOOM = 0.5;
@@ -114,6 +117,17 @@ export function ResultsSection({
           </Button>
         </div>
       </div>
+
+      {/* Feedback Section - AJOUTÉ EN BAS */}
+      <FeedbackSection 
+        prediction={prediction}
+        onFeedback={(isCorrect, correctPrediction) => {
+          if (!isCorrect && correctPrediction) {
+            console.log("Correction envoyée:", correctPrediction);
+            // TODO: Appel API /feedback quand backend sera prêt
+          }
+        }}
+      />
 
       {/* Reset */}
       <div className="flex justify-end">
