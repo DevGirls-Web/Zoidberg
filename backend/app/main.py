@@ -6,10 +6,10 @@ from app.core.prediction import predict_pneumonia
 
 app = FastAPI(title="Zoidberg2.0 API")
 
-# Autoriser les requêtes depuis ton frontend React (à ajuster selon ton port)
+# Autoriser les requêtes depuis ton frontend 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite par défaut
+    allow_origins=["http://localhost:3000"],  # ← port Next.js
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -20,17 +20,26 @@ def health_check():
     return {"status": "ok", "message": "API Zoidberg2.0 opérationnelle"}
 
 
+from app.core.gradcam import generate_gradcam, overlay_heatmap, image_to_base64
+from app.core.prediction import predict_pneumonia, model
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    # Vérification du type de fichier
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Le fichier doit être une image")
 
     file_bytes = await file.read()
 
     try:
-        image_array = preprocess_image(file_bytes)
+        image_array, original_bgr = preprocess_image(file_bytes)
         result = predict_pneumonia(image_array)
+
+        heatmap = generate_gradcam(model, image_array)
+        overlayed = overlay_heatmap(original_bgr, heatmap)
+        gradcam_base64 = image_to_base64(overlayed)
+
+        result["gradcam_image"] = f"data:image/jpeg;base64,{gradcam_base64}"
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur de traitement : {str(e)}")
 
