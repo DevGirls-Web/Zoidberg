@@ -1,4 +1,6 @@
+// components/features/history/types.ts
 export type Prediction = "Pneumonie" | "Normal";
+export type FeedbackStatus = "idle" | "satisfied" | "correcting";
 
 export interface Analysis {
   id: string;
@@ -8,6 +10,10 @@ export interface Analysis {
   prediction: Prediction;
   confidence: number;
   model: string;
+  feedback: {
+    status: FeedbackStatus;
+    correctPrediction?: Prediction;
+  };
 }
 
 export type SortDir = "asc" | "desc" | null;

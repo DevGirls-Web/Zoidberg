@@ -1,6 +1,9 @@
+"use client";
 import { Bell } from "lucide-react";
+import { useSession } from "@hooks/useSession";
 
 export function Header() {
+  const { user } = useSession();
   const now = new Date();
   const date = now.toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -21,10 +24,10 @@ export function Header() {
       {/* Gauche : Bonjour + sous-titre */}
       <div className="flex flex-col gap-0.5">
         <h1 className="text-[22px] font-bold text-foreground tracking-tight leading-tight">
-          Bonjour Julien
+          Bonjour Dr {user?.name || "Docteur"}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Modele de consultation : Pneumologue
+          Modèle de consultation : Pneumologue
         </p>
       </div>
 

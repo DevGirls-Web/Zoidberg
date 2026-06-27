@@ -1,34 +1,57 @@
+// app/(dashboard)/history/page.tsx
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@components/ui/Button";
 import { StatsRow } from "@components/features/history/StatsRow";
 import { FiltersBar } from "@components/features/history/FiltersBar";
 import { AnalysisTable } from "@components/features/history/AnalysisTable";
-import { MOCK_DATA } from "@components/features/history/mockData";
 import { formatDate } from "@components/features/history/types";
+import { analysesStorage } from "@lib/storage/analyses";
+import { useSession } from "@hooks/useSession";
 import type {
   FilterPrediction,
   SortDir,
   SortKey,
+  Analysis,
 } from "@components/features/history/types";
 
 export default function HistoryPage() {
+  const { user } = useSession();
+  const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [search, setSearch] = useState("");
   const [filterPred, setFilterPred] = useState<FilterPrediction>("all");
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  // Charger les analyses depuis localStorage
+  useEffect(() => {
+      if (user?.id) {
+        const userAnalyses = analysesStorage.getByUser(user.id);
+        
+        // Vérifier si les données ont réellement changé
+        setAnalyses((prev) => {
+          // Comparaison simple pour éviter les rendus inutiles
+          if (JSON.stringify(prev) === JSON.stringify(userAnalyses)) {
+            return prev;
+          }
+          return userAnalyses;
+        });
+      }
+    }, [user]);
+
   // ── Stats ──
-  const total = MOCK_DATA.length;
-  const pneumoCount = MOCK_DATA.filter((a) => a.prediction === "Pneumonie").length;
+  const total = analyses.length;
+  const pneumoCount = analyses.filter((a) => a.prediction === "Pneumonie").length;
   const normalCount = total - pneumoCount;
-  const avgConf = Math.round(MOCK_DATA.reduce((s, a) => s + a.confidence, 0) / total);
+  const avgConf = total > 0
+    ? Math.round(analyses.reduce((s, a) => s + a.confidence, 0) / total)
+    : 0;
 
   // ── Filter + sort ──
   const rows = useMemo(() => {
-    let list = [...MOCK_DATA];
+    let list = [...analyses];
 
     const q = search.toLowerCase().trim();
     if (q) {
@@ -49,14 +72,16 @@ export default function HistoryPage() {
       list.sort((a, b) => {
         const va = a[sortKey];
         const vb = b[sortKey];
-        const cmp =
-          typeof va === "number" ? (va as number) - (vb as number) : String(va).localeCompare(String(vb), "fr");
+        if (typeof va === "number" && typeof vb === "number") {
+          return sortDir === "asc" ? va - vb : vb - va;
+        }
+        const cmp = String(va).localeCompare(String(vb), "fr");
         return sortDir === "asc" ? cmp : -cmp;
       });
     }
 
     return list;
-  }, [search, filterPred, sortKey, sortDir]);
+  }, [analyses, search, filterPred, sortKey, sortDir]);
 
   const toggleSort = useCallback(
     (key: SortKey) => {
@@ -72,9 +97,18 @@ export default function HistoryPage() {
   );
 
   const handleExport = useCallback(() => {
-    const header = ["ID", "Date", "Nom", "Prénom", "Prédiction", "Confiance (%)", "Modèle"];
+    const header = ["ID", "Date", "Nom", "Prénom", "Prédiction", "Confiance (%)", "Modèle", "Feedback"];
     const lines = rows.map((r) =>
-      [r.id, r.date, r.lastName, r.firstName, r.prediction, r.confidence, r.model].join(",")
+      [
+        r.id,
+        r.date,
+        r.lastName,
+        r.firstName,
+        r.prediction,
+        r.confidence,
+        r.model,
+        r.feedback?.status || "Non renseigné",
+      ].join(",")
     );
     const csv = [header.join(","), ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -95,7 +129,7 @@ export default function HistoryPage() {
             Historique des analyses
           </h1>
           <p className="text-sm text-muted-foreground">
-            {total} analyses enregistrées · Modèle courant v2.4
+            {total} analyses enregistrées · Modèle courant v1.0
           </p>
         </div>
         <Button variant="secondary" size="sm" icon={<Download size={15} />} onClick={handleExport}>
@@ -113,7 +147,17 @@ export default function HistoryPage() {
         resultCount={rows.length}
       />
 
-      <AnalysisTable rows={rows} total={total} sortKey={sortKey} sortDir={sortDir} onToggleSort={toggleSort} />
+      <AnalysisTable
+        rows={rows}
+        total={total}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        onToggleSort={toggleSort}
+        onViewReport={(analysis) => {
+          // TODO: Ouvrir le rapport détaillé de l'analyse
+          console.log("Voir rapport:", analysis);
+        }}
+      />
     </div>
   );
 }

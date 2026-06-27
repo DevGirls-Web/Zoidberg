@@ -1,4 +1,5 @@
-import { Search, ChevronUp, ChevronDown, ChevronsUpDown, FileText } from "lucide-react";
+// components/features/history/AnalysisTable.tsx
+import { Search, ChevronUp, ChevronDown, ChevronsUpDown, FileText, Check, X, RefreshCw } from "lucide-react";
 import { clsx } from "clsx";
 import { Badge } from "@components/ui/Badge";
 import type { Analysis, Prediction, SortDir, SortKey } from "./types";
@@ -12,7 +13,7 @@ const COLS: { key: SortKey; label: string }[] = [
   { key: "confidence", label: "Indice de confiance" },
 ];
 
-const GRID_COLS = "130px 140px 140px 160px 1fr 48px";
+const GRID_COLS = "130px 140px 140px 160px 1fr 100px 48px";
 
 function ConfidenceBar({ value, prediction }: { value: number; prediction: Prediction }) {
   return (
@@ -45,9 +46,17 @@ interface AnalysisTableProps {
   sortKey: SortKey;
   sortDir: SortDir;
   onToggleSort: (key: SortKey) => void;
+  onViewReport?: (analysis: Analysis) => void;
 }
 
-export function AnalysisTable({ rows, total, sortKey, sortDir, onToggleSort }: AnalysisTableProps) {
+export function AnalysisTable({
+  rows,
+  total,
+  sortKey,
+  sortDir,
+  onToggleSort,
+  onViewReport,
+}: AnalysisTableProps) {
   return (
     <div className="surface-card overflow-hidden">
       {/* Table head */}
@@ -67,6 +76,9 @@ export function AnalysisTable({ rows, total, sortKey, sortDir, onToggleSort }: A
             </span>
           </button>
         ))}
+        <div className="px-5 py-3.5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          Feedback
+        </div>
         <div className="px-5 py-3.5" />
       </div>
 
@@ -109,8 +121,26 @@ export function AnalysisTable({ rows, total, sortKey, sortDir, onToggleSort }: A
               <div className="px-5 py-4">
                 <ConfidenceBar value={row.confidence} prediction={row.prediction} />
               </div>
+              <div className="px-5 py-4">
+                {row.feedback?.status === "satisfied" && (
+                  <span className="flex items-center gap-1 text-xs text-green-600">
+                    <Check size={12} />
+                    Satisfait
+                  </span>
+                )}
+                {row.feedback?.status === "correcting" && (
+                  <span className="flex items-center gap-1 text-xs text-brand">
+                    <RefreshCw size={12} />
+                    Corrigé ({row.feedback.correctPrediction})
+                  </span>
+                )}
+                {(!row.feedback || row.feedback.status === "idle") && (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
+              </div>
               <div className="px-3 py-4 flex items-center justify-center">
                 <button
+                  onClick={() => onViewReport?.(row)}
                   className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-brand hover:bg-brand-light transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                   title="Voir le rapport"
                 >
@@ -129,7 +159,7 @@ export function AnalysisTable({ rows, total, sortKey, sortDir, onToggleSort }: A
         </span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Modèles :</span>
-          {["v2.4", "v2.3", "v2.2"].map((m) => (
+          {["v1.0"].map((m) => (
             <span
               key={m}
               className="text-[10px] font-medium text-brand bg-brand-light px-2 py-0.5 rounded-full"

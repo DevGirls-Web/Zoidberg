@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LogOut, X } from "lucide-react";
 import { clsx } from "clsx";
 import { LungIcon } from "@components/icons/LungIcon";
+import { useSession } from "@hooks/useSession";
 
 // ── Types ──────────────────────────────────────────────
 type IconName =
@@ -164,14 +165,19 @@ interface SidebarProps {
 
 // ── SidebarContent ─────────────────────────────────────
 function SidebarContent({
-  doctorName = "Dr. Julien",
-  specialty = "Pneumologue",
-  initials = "DJ",
-}: Omit<SidebarProps, "isOpen" | "onClose">) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const isActive = (href: string) => pathname === href;
+  isOpen,  // ← On ajoute isOpen pour l'utiliser
+  onClose,
+}: SidebarProps) {
+        const { user } = useSession();  // ← Hook session
+        
+        // Utiliser les données de session ou les valeurs par défaut
+        const doctorName = user?.name ? `Dr. ${user.name}` : "Dr. Julien";
+        const specialty = user?.specialty || "Pneumologue";
+        const initials = user?.initials || "DJ";
+        
+        const pathname = usePathname();
+        const router = useRouter();
+        const isActive = (href: string) => pathname === href;
 
   return (
     <>
@@ -285,6 +291,7 @@ export function Sidebar({
     };
   }, [isOpen]);
 
+  const { user, logout } = useSession();
   const contentProps = { doctorName, specialty, initials };
 
   return (

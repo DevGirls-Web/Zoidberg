@@ -10,9 +10,12 @@ import { RecommendationsSection } from "@components/features/dashboard/Recommend
 import { PatientDossierSection } from "@components/features/dashboard/PatientDossierSection";
 import { UploadedFile } from "@components/features/dashboard/UploadZone";
 import type { AnalysisState } from "@components/features/dashboard/types";
+import { analysesStorage } from "@lib/storage/analyses";
 import { api, type PredictionResult } from "@lib/api";
+import { useSession } from "@hooks/useSession";
 
 export default function AccueilPage() {
+  const { user } = useSession();
   const [analysisState, setAnalysisState] = useState<AnalysisState>("idle");
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [results, setResults] = useState<PredictionResult | null>(null);
@@ -32,20 +35,40 @@ export default function AccueilPage() {
   }, []);
 
   const handleAnalyze = useCallback(async () => {
-    if (!uploadedFile) return;
+      if (!uploadedFile) return;
 
-    setAnalysisState("analyzing");
-    setError(null);
+      setAnalysisState("analyzing");
+      setError(null);
 
-    try {
-      const result = await api.predict(uploadedFile.raw);
-      setResults(result);
-      setAnalysisState("done");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de l'analyse");
-      setAnalysisState("uploaded");
-    }
-  }, [uploadedFile]);
+      try {
+        const result = await api.predict(uploadedFile.raw);
+
+        // ✅ Sauvegarder l'analyse dans localStorage
+        if (user?.id) {
+          const normalizedPrediction: "Pneumonie" | "Normal" = result.prediction === "PNEUMONIA" ? "Pneumonie" : "Normal";
+
+          const newAnalysis = {
+            id: `${user.id}-${Date.now()}`,
+            date: new Date().toISOString(),
+            lastName: user.name || "Patient",
+            firstName: "Patient",
+            prediction: normalizedPrediction,
+            confidence: Math.round(result.confidence * 100),
+            model: "v1.0",
+            feedback: {
+              status: "idle" as const,
+            },
+          };
+          analysesStorage.add(newAnalysis);
+        }
+
+        setResults(result);
+        setAnalysisState("done");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur lors de l'analyse");
+        setAnalysisState("uploaded");
+      }
+    }, [uploadedFile, user]);
 
   const handleReset = useCallback(() => {
     setResults(null);

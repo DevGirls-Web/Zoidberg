@@ -6,9 +6,11 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@components/ui/Button";
 import { Input } from "@components/ui/Input";
 import { LungIcon } from "@components/icons/LungIcon";
+import { useSession } from "@hooks/useSession";
 
 export function LoginForm() {
   const router = useRouter();
+  const { login } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +19,15 @@ export function LoginForm() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // TODO: brancher l'appel d'auth (API) ici avant la redirection
+
+     login({
+      id: `user-${Date.now()}`, // Générer un ID unique
+      name: email.split("@")[0], // Utiliser la partie avant @ comme nom
+      email: email,
+      specialty: "Pneumologue", // À remplacer par la vraie donnée de l'API
+      initials: email.substring(0, 2).toUpperCase(), // Utiliser les 2 premières lettres de l'email
+    });
+
     router.push("/accueil");
   }
 

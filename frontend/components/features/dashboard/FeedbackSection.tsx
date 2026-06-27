@@ -4,22 +4,29 @@
 import { useState } from "react";
 import { Check, X, Send, ThumbsUp, ThumbsDown } from "lucide-react";
 import { clsx } from "clsx";
+import { analysesStorage } from "@lib/storage/analyses";
+import type { Prediction } from "@components/features/history/types";
 
 interface FeedbackSectionProps {
   prediction: string; // "NORMAL" | "PNEUMONIA"
+  analysisId: string; 
   onFeedback?: (isCorrect: boolean, correctPrediction?: string) => void;
 }
 
-export function FeedbackSection({ prediction, onFeedback }: FeedbackSectionProps) {
+export function FeedbackSection({ prediction, analysisId, onFeedback }: FeedbackSectionProps) {
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "satisfied" | "correcting">("idle");
-  const [selectedCorrection, setSelectedCorrection] = useState<"NORMAL" | "PNEUMONIA">(
-    prediction === "NORMAL" ? "PNEUMONIA" : "NORMAL"
+   
+  const normalizedPrediction: Prediction =  prediction === "PNEUMONIA" ? "Pneumonie" : "Normal";
+  const [selectedCorrection, setSelectedCorrection] = useState<Prediction>(
+    normalizedPrediction === "Normal" ? "Pneumonie" : "Normal"
   );
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSatisfied() {
+   function handleSatisfied() {
     setFeedbackStatus("satisfied");
+    analysesStorage.updateFeedback(analysisId, { status: "satisfied" });
     onFeedback?.(true);
   }
 
@@ -34,6 +41,10 @@ export function FeedbackSection({ prediction, onFeedback }: FeedbackSectionProps
       setFeedbackStatus("correcting");
       setIsModalOpen(false);
       setIsSubmitting(false);
+      analysesStorage.updateFeedback(analysisId, {
+        status: "correcting",
+        correctPrediction: selectedCorrection,
+      });
       onFeedback?.(false, selectedCorrection);
     }, 800);
   }
@@ -124,8 +135,8 @@ export function FeedbackSection({ prediction, onFeedback }: FeedbackSectionProps
                     type="radio"
                     name="correction"
                     value="NORMAL"
-                    checked={selectedCorrection === "NORMAL"}
-                    onChange={() => setSelectedCorrection("NORMAL")}
+                    checked={selectedCorrection === "Normal"}
+                    onChange={() => setSelectedCorrection("Normal")}
                     className="size-4 accent-brand cursor-pointer"
                   />
                   <span className="text-sm font-medium text-foreground">Normal</span>
@@ -135,8 +146,8 @@ export function FeedbackSection({ prediction, onFeedback }: FeedbackSectionProps
                     type="radio"
                     name="correction"
                     value="PNEUMONIA"
-                    checked={selectedCorrection === "PNEUMONIA"}
-                    onChange={() => setSelectedCorrection("PNEUMONIA")}
+                    checked={selectedCorrection === "Pneumonie"}
+                    onChange={() => setSelectedCorrection("Pneumonie")}
                     className="size-4 accent-brand cursor-pointer"
                   />
                   <span className="text-sm font-medium text-foreground">Pneumonie</span>
